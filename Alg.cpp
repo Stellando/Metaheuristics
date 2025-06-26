@@ -48,7 +48,7 @@ void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
                 value = new_value;
                 current = new_value;
                 cout << "Current Best Value: " << current << endl;
-                fout << "Current Best Value: " << current <<" run:"<<nfes<< std::endl;
+                fout <<nfes<< " " << current << std::endl;
             }
             else
             {
