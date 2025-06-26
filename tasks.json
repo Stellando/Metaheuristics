@@ -1,0 +1,24 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build C++ Project",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g",
+                "-std=c++17",
+                "main.cpp",
+                "Alg.cpp",
+                "OneMax.cpp",
+                "-o",
+                "main.exe"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "使用 g++ 編譯 main.cpp、Alg.cpp 和 OneMax.cpp"
+        },
+    ]
+}
