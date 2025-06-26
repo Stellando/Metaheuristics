@@ -1,5 +1,6 @@
 #include "Alg.h"
 #include <fstream>
+#include <chrono> // 新增
 
 void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
 {
@@ -16,21 +17,20 @@ void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
 
         int current=0;
         Reset();
-
         Init();
 
-        //世代數(iteration)跟計算次數(evaluation)二擇一使用
-        //跟其他演算法比較通常都是使用evaluation，故建議使用evaluation
-        for (int j = 0; j < Iter; j++) /*Iteration (世代數) */
-        {
-            /*
-            演算法流程
-            */
-        }
+        // 用 chrono 計時
+        auto start = std::chrono::steady_clock::now();
         int value = 0;
-        while (nfes < Iter) /*Evaluation (計算次數)*/
+        while (true)
         {
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
+            if (elapsed >= 180) break; // 運算 10 秒後停止
+
             cout<<"algorithm running..."<<nfes<<endl;
+            //fout<<"algorithm running..."<<nfes<<endl;
+
             // 隨機產生一個解
             std::vector<int> sol(Bit);
             for (int k = 0; k < Bit; ++k) {
@@ -41,8 +41,7 @@ void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
             if (value > current) {
                 current = value; // 更新當前最佳解      
                 cout << "Current Best Value: " << current << endl;
-                fout << "Current Best Value: " << current << std::endl;
-
+                fout << "Current Best Value: " << current <<" run:"<<nfes<< std::endl;
             }
         }
         fout.close();
