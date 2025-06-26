@@ -20,17 +20,42 @@ void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
         int value = 0;
         cout << "Run: " << i + 1 << endl;
 
-        
-        std::ofstream fout("result_Run" + std::to_string(i + 1) + ".txt", std::ios::out | std::ios::trunc);
+        //建立輸出檔案
+        std::ofstream fout("result_Hill" + std::to_string(i + 1) + ".txt", std::ios::out | std::ios::trunc);
 
         Reset();
+        // 初始化解答
+        std::vector<int> sol = Init(); 
 
-        std::vector<int> sol = Init(); // ✅ 正確接收 Init 結果
-
+        //做Transition
         for (int nfes = 0; nfes < Iter; nfes++)
         {
             cout << "algorithm running... " << nfes << endl;
-            Evaluation(sol, value, current, fout); // ✅ 傳參數進去
+
+            // 備份舊解與舊值
+            std::vector<int> old_sol = sol;
+            int old_value = value;
+
+            // 嘗試變異
+            int idx = rand() % Bit;
+            sol[idx] = 1 - sol[idx];
+
+            // 呼叫 Evaluation 評估新解表現
+            int new_value = Evaluation(sol);
+
+            if (new_value > old_value)
+            {
+                value = new_value;
+                current = new_value;
+                cout << "Current Best Value: " << current << endl;
+                fout << "Current Best Value: " << current <<" run:"<<nfes<< std::endl;
+            }
+            else
+            {
+                // 表現沒變好，還原
+                sol = old_sol;
+                value = old_value;
+            }
         }
 
         fout.close();
@@ -46,15 +71,11 @@ std::vector<int> Alg::Init()
     return sol;
 }
 
-void Alg::Evaluation(std::vector<int>& sol, int& value, int& current, std::ofstream& fout)
+int Alg::Evaluation(const std::vector<int>& sol)
 {
-    value = OneMaxProblem(sol, Bit);
-    if (value > current) {
-        current = value;
-        cout << "Current Best Value: " << current << endl;
-        fout << "Current Best Value: " << current << std::endl;
-    }
+    return OneMaxProblem(sol, Bit);
 }
+
 
 void Alg::Reset()
 {
