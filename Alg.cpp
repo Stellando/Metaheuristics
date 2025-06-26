@@ -1,6 +1,9 @@
 #include "Alg.h"
+#include <iostream>
 #include <fstream>
-#include <chrono> // 新增
+#include <cstdlib>
+
+using namespace std;
 
 void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
 {
@@ -9,58 +12,51 @@ void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
     Iter = _Iter;
     rate = _Rate;
 
-    cout <<"bit:"<< Bit << "run:" << Run << "iter:" << Iter << "rate:" << rate<< endl;
+    cout << "bit: " << Bit << " run: " << Run << " iter: " << Iter << " rate: " << rate << endl;
+
     for (int i = 0; i < Run; i++)
-    {   
-        cout << "Run: " << i + 1 << endl;
-        std::ofstream fout("result_Run" + std::to_string(i + 1) + ".txt");
-
-        int current=0;
-        Reset();
-        Init();
-
-        // 用 chrono 計時
-        auto start = std::chrono::steady_clock::now();
+    {
+        int current = 0;
         int value = 0;
-        while (true)
+        cout << "Run: " << i + 1 << endl;
+
+        
+        std::ofstream fout("result_Run" + std::to_string(i + 1) + ".txt", std::ios::out | std::ios::trunc);
+
+        Reset();
+
+        std::vector<int> sol = Init(); // ✅ 正確接收 Init 結果
+
+        for (int nfes = 0; nfes < Iter; nfes++)
         {
-            auto now = std::chrono::steady_clock::now();
-            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
-            if (elapsed >= 180) break; // 運算 10 秒後停止
-
-            cout<<"algorithm running..."<<nfes<<endl;
-            //fout<<"algorithm running..."<<nfes<<endl;
-
-            // 隨機產生一個解
-            std::vector<int> sol(Bit);
-            for (int k = 0; k < Bit; ++k) {
-                sol[k] = rand() % 2; // 0 或 1
-            }
-            
-            Evaluation(sol, value); // 評估這個解
-            if (value > current) {
-                current = value; // 更新當前最佳解      
-                cout << "Current Best Value: " << current << endl;
-                fout << "Current Best Value: " << current <<" run:"<<nfes<< std::endl;
-            }
+            cout << "algorithm running... " << nfes << endl;
+            Evaluation(sol, value, current, fout); // ✅ 傳參數進去
         }
+
         fout.close();
     }
 }
 
-void Alg::Evaluation(vector<int> sol, int &value)
+std::vector<int> Alg::Init()
+{
+    std::vector<int> sol(Bit);
+    for (int k = 0; k < Bit; ++k) {
+        sol[k] = rand() % 2;
+    }
+    return sol;
+}
+
+void Alg::Evaluation(std::vector<int>& sol, int& value, int& current, std::ofstream& fout)
 {
     value = OneMaxProblem(sol, Bit);
-    nfes++;
-    //cout<< "Evaluation: " << nfes << " Value: " << value << endl;
+    if (value > current) {
+        current = value;
+        cout << "Current Best Value: " << current << endl;
+        fout << "Current Best Value: " << current << std::endl;
+    }
 }
 
 void Alg::Reset()
 {
-    nfes = 0;
-}
-
-void Alg::Init()
-{
-    /*Initialize*/
+    // 清除舊資料或狀態（目前為空實作）
 }

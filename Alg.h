@@ -10,6 +10,9 @@ class Alg : OneMax
 {
 public:
     void RunALG(int, int, int, double);
+    void Reset();
+    std::vector<int> Init(); // ✅ 改成回傳 vector<int>
+    void Evaluation(std::vector<int>& sol, int& value, int& current, std::ofstream& fout);
 
 private:
     // Input from Command-line Argument
@@ -19,12 +22,10 @@ private:
     double rate;
 
     // calculate the evaluation
-    int nfes=0;
 
-    void Evaluation(vector<int>, int &);
+    //void Evaluation(vector<int>, int &);
 
-    void Reset();
-    void Init();
+
 };
 
 #endif
