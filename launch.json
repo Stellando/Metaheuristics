@@ -6,7 +6,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/main.exe",
-      "args": ["1000", "1", "20000", "0.49"],  // bit run iter rate
+      "args": ["1000", "1", "1000", "0.495"],  // bit run iter rate
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],

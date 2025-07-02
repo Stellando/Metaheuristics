@@ -42,53 +42,55 @@ void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
 
         // 1. 初始化族群
         std::vector<Individual> population;
-        for (int j = 0; j < 50; ++j) { // 可調整族群數量
+        for (int j = 0; j < 50; ++j) { // 建議增加族群數量以維持多樣性
             Individual ind(Bit);
             ind.fitness = Evaluation(ind.genes);
             population.push_back(ind);
         }
 
-        // 2. 適應度評估（已於初始化中完成）
-
         for (int nfes = 0; nfes < Iter; nfes++)
         {
             cout << "algorithm running... " << nfes << endl;
 
-            // 3. 選擇（分為前半群與後半群，各自找出最高者）
-            int half = population.size() / 2;
-
-            auto best_front = max_element(population.begin(), population.begin() + half, [](const Individual& a, const Individual& b) {
-                return a.fitness < b.fitness;
+            // 1. 先依 fitness 由大到小排序
+            std::sort(population.begin(), population.end(), [](const Individual& a, const Individual& b) {
+                return a.fitness > b.fitness;
             });
-            auto best_back = max_element(population.begin() + half, population.end(), [](const Individual& a, const Individual& b) {
-                return a.fitness < b.fitness;
-            });
-            // best_front 與 best_back 就是兩群中各自的最佳個體
 
-            // 4. 交配與突變：產生新個體
-            Individual child(Bit);
-            for (int b = 0; b < Bit; ++b) {
-                double r = (double)rand() / RAND_MAX;
-                if (r < rate) { // 交配率，來源於 best_front
-                    child.genes[b] = best_front->genes[b];
-                } else if (r < 2 * rate) { // 交配率，來源於 best_back
-                    child.genes[b] = best_back->genes[b];
-                } else { // 剩下的機率做突變
-                    child.genes[b] = rand() % 2;
+            // 2. 取前10%作為父母群
+            int elite_count = std::max(1, (int)(population.size() * 0.1));
+            std::vector<Individual> parents(population.begin(), population.begin() + elite_count);
+
+            // 3. 產生新族群（每次隨機從父母群選兩個交配）
+            std::vector<Individual> new_population;
+            while (new_population.size() < population.size()) {
+                // 隨機選兩個父母
+                int idx1 = rand() % elite_count;
+                int idx2 = rand() % elite_count;
+                while (idx2 == idx1 && elite_count > 1) idx2 = rand() % elite_count;
+
+                Individual parent1 = parents[idx1];
+                Individual parent2 = parents[idx2];
+
+                Individual child(Bit);
+                for (int b = 0; b < Bit; ++b) {
+                    double r = (double)rand() / RAND_MAX;
+                    if (r < rate) {
+                        child.genes[b] = parent1.genes[b];
+                    } else if (r < 2 * rate) {
+                        child.genes[b] = parent2.genes[b];
+                    } else {
+                        child.genes[b] = rand() % 2;
+                    }
                 }
+                child.fitness = Evaluation(child.genes);
+                new_population.push_back(child);
             }
-            // 計算新個體適應度
-            child.fitness = Evaluation(child.genes);
 
-            // 將 child 替換掉群體中最差的個體
-            auto worst = min_element(population.begin(), population.end(), [](const Individual& a, const Individual& b) {
-                return a.fitness < b.fitness;
-            });
-            *worst = child;
+            // 4. 用新族群取代舊族群
+            population = new_population;
 
-            // 7. 終止條件（待實作）
-
-            // 這裡暫時只是印出目前族群中最好的個體
+            // 5. 找出目前最佳個體並輸出
             auto best = max_element(population.begin(), population.end(), [](const Individual& a, const Individual& b) {
                 return a.fitness < b.fitness;
             });
