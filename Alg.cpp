@@ -36,13 +36,13 @@ void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
         int value = 0;
         cout << "Run: " << i + 1 << endl;
 
-        std::ofstream fout("result_GA" + std::to_string(i + 1) + ".txt", std::ios::out | std::ios::trunc);
+        std::ofstream fout("result_GA1" + std::to_string(i + 1) + ".txt", std::ios::out | std::ios::trunc);
 
         Reset();
 
         // 1. 初始化族群
         std::vector<Individual> population;
-        for (int j = 0; j < 50; ++j) { // 建議增加族群數量以維持多樣性
+        for (int j = 0; j < 60; ++j) { // 建議增加族群數量以維持多樣性
             Individual ind(Bit);
             ind.fitness = Evaluation(ind.genes);
             population.push_back(ind);
