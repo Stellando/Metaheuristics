@@ -1,9 +1,11 @@
 #include "Alg.h"
 #include <iostream>
+#include <ctime>
+#include <cstdlib>
 using namespace std;
 int main(int argc, char *argv[])
 {    
-    
+    srand(static_cast<unsigned>(time(0))); // 加這行
     cout<<"main"<<endl;
     //system("pause");
     // 檢查參數是否足夠
