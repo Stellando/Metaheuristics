@@ -65,6 +65,7 @@ void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
             // 計算每個學生的變化方向和幅度
             vector<double> weights(population_size);
             vector<double> delta_x(population_size), delta_y(population_size);
+            vector<pair<double, int>> delta_f_abs(population_size); // 儲存 |Δf| 和索引
             double sum_weights = 0.0;
             double weighted_x = 0.0, weighted_y = 0.0;
 
@@ -82,49 +83,59 @@ void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate)
                 double delta_f = population[j].value - population[j].prev_value;
                 delta_x[j] = population[j].x - population[j].prev_x;
                 delta_y[j] = population[j].y - population[j].prev_y;
-                // 正向加權（變好）或反向加權（變壞）
+                delta_f_abs[j] = {abs(delta_f), j};
                 weights[j] = (delta_f < 0) ? -rate * abs(delta_f) : rate * abs(delta_f);
-                sum_weights += abs(weights[j]);
-                weighted_x += weights[j] * delta_x[j];
-                weighted_y += weights[j] * delta_y[j];
+            }
 
-                // 更新歷史資訊
-                population[j].prev_x = population[j].x;
-                population[j].prev_y = population[j].y;
-                population[j].prev_value = population[j].value;
-
-                // 更新全局最佳解
-                if (population[j].value < global_best.value) {
-                    global_best = {population[j].x, population[j].y, population[j].value};
-                }
+            // 僅考慮變化幅度前半的學生
+            sort(delta_f_abs.begin(), delta_f_abs.end(), greater<pair<double, int>>());
+            int half_size = population_size / 2;
+            for (int j = 0; j < half_size; j++) {
+                int idx = delta_f_abs[j].second;
+                sum_weights += abs(weights[idx]);
+                weighted_x += weights[idx] * delta_x[idx];
+                weighted_y += weights[idx] * delta_y[idx];
             }
 
             // 推測最佳位置
-            double best_x = sum_weights > 1e-6 ? weighted_x / sum_weights : global_best.x;
-            double best_y = sum_weights > 1e-6 ? weighted_y / sum_weights : global_best.y;
+            double best_x = sum_weights > 1e-16 ? weighted_x / sum_weights : weighted_x;
+            double best_y = sum_weights > 1e-16 ? weighted_y / sum_weights : weighted_y;
             // 限制定義域
             best_x = max(-32.768, min(32.768, best_x));
             best_y = max(-32.768, min(32.768, best_y));
             cout << "Best Position: (" << best_x << ", " << best_y << ")" << endl;
-
-            // 生成新群體
+            // 逐步靠近最佳位置
+            double alpha = 0.8 - 0.78 * (nfes / (double)Iter); // 從 0.8 減到 0.02
+            rate *=0.5; 
+            cout<<"rate: "<<rate<<endl;
+            vector<Student> new_population(population_size);
             for (int j = 0; j < population_size; j++) {
-                double perturb_scale = rate * (1.0 - nfes / (double)Iter); // 隨迭代縮小擾動
-                population[j].x = best_x + perturb_scale * perturb(gen);
-                population[j].y = best_y + perturb_scale * perturb(gen);
+                // 線性插值：(1 - α) * current + α * best
+                new_population[j].x = (1.0 - alpha) * population[j].x + alpha * best_x;
+                new_population[j].y = (1.0 - alpha) * population[j].y + alpha * best_y;
+                // 加入小擾動以保持多樣性
+                double perturb_scale = rate * (1.0 - nfes / (double)Iter);
+                //將rate呈現指數下降
+
+                //perturb_scale *= exp(-0.1 * nfes / (double)Iter); // 指數衰減
+                new_population[j].x += perturb_scale * perturb(gen) * 0.1; // 減小擾動幅度
+                new_population[j].y += perturb_scale * perturb(gen) * 0.1;
                 // 限制定義域
-                population[j].x = max(-32.768, min(32.768, population[j].x));
-                population[j].y = max(-32.768, min(32.768, population[j].y));
-                population[j].value = Evaluation(population[j].x, population[j].y);
-                population[j].prev_x = population[j].x;
-                population[j].prev_y = population[j].y;
-                population[j].prev_value = population[j].value;
+                new_population[j].x = max(-32.768, min(32.768, new_population[j].x));
+                new_population[j].y = max(-32.768, min(32.768, new_population[j].y));
+                new_population[j].value = Evaluation(new_population[j].x, new_population[j].y);
+                new_population[j].prev_x = new_population[j].x;
+                new_population[j].prev_y = new_population[j].y;
+                new_population[j].prev_value = new_population[j].value;
 
                 // 更新全局最佳解
-                if (population[j].value < global_best.value) {
-                    global_best = {population[j].x, population[j].y, population[j].value};
+                if (new_population[j].value < global_best.value) {
+                    global_best = {new_population[j].x, new_population[j].y, new_population[j].value};
                 }
             }
+
+            // 更新群體
+            population = new_population;
 
             cout << "Iteration: " << nfes + 1 << ", Global Best Value: " << global_best.value << endl;
             fout << nfes << " " << global_best.value << endl;
