@@ -19,10 +19,10 @@ int main(int argc, char *argv[])
     int Run = atoi(argv[2]);     // 執行次數
     int Iter = atoi(argv[3]);    // 世代數
     double rate = atof(argv[4]); // 演算法參數
-    
+    int dim = atoi(argv[5]);     // 維度
     
     Alg algorithm;
-    algorithm.RunALG(Bit, Run, Iter, rate);
+    algorithm.RunALG(Bit, Run, Iter, rate , dim);
     
     system("pause");
 }
