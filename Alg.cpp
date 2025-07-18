@@ -33,11 +33,11 @@ struct Individual {
 
 void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate, int dim)
 {
-    Bit = _Bit;
+    Bit = _Bit; //0/1問題用
     Run = _Run;
     Iter = _Iter;
     rate = _Rate; // 目前未使用，可用於自適應參數
-    dim = dim;
+    dim = dim; //維度
     int population_size = 10 * dim; // 動態設置族群大小，建議 10 * dim 或 20 * dim
 
     cout << "Bit: " << Bit << " Run: " << Run << " Iter: " << Iter << " Rate: " << rate << " Dim: " << dim << endl;
@@ -121,6 +121,7 @@ void Alg::RunALG(int _Bit, int _Run, int _Iter, double _Rate, int dim)
     }
 }
 
+// 初始化解 0/1問題用
 std::vector<int> Alg::Init()
 {
     std::vector<int> sol(Bit);
